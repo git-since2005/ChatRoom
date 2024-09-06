@@ -6,32 +6,67 @@
     <title>Flask Chat App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
     <script>
+        console.log("Hey")
+        fetch('http://127.0.0.1:5000/fetch-data',{method:"GET", headers:{'Content-Type':'application/json'}})
+                .then(async (e) => {
+                        const data = await e.json()
+                        data.forEach(element => {
+                        const div = document.createElement('div')
+                        const p = document.createElement('p');
+                        const time = document.createElement('p')
+                        div.className = "message"
+                        p.innerHTML = element.msg;
+                        p.className = "msg"
+                        console.log(element.time)
+                        time.innerHTML = element.time
+                        time.className = "time"
+                        div.appendChild(p)
+                        div.appendChild(time)
+                        messages.appendChild(div);
+                    })}
+                )
+
         document.addEventListener('DOMContentLoaded', () => {
             const socket = io();
             const form = document.getElementById('chat-form');
             const input = document.getElementById('message');
             const messages = document.getElementById('messages');
+            let date = new Date()
+            let tim = date.getDate() + "/"+date.getMonth() + "/" + date.getFullYear() + " " + date.getHours() + ':' + date.getMinutes() + ":" + date.getSeconds()
 
-            socket.on('message', (msg) => {
+
+
+            socket.on('message',  async(msg, t=tim) => {
                 const div = document.createElement('div')
                 const p = document.createElement('p');
                 const time = document.createElement('p')
                 div.className = "message"
                 p.innerHTML = msg;
                 p.className = "msg"
-                let date = new Date()
-                time.innerHTML = date.getDate() + "/"+date.getMonth() + "/" + date.getFullYear() + " " + date.getHours() + ':' + date.getMinutes() + ":" + date.getSeconds()
+                time.innerHTML = tim
                 time.className = "time"
                 div.appendChild(p)
                 div.appendChild(time)
                 messages.appendChild(div);
+            //     const dataToSend = {
+            //         msg:msg,
+            //         time:tim
+            //     };
+            //     console.log(dataToSend)
+            // await fetch('http://127.0.0.1:5000/addmsg', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify(dataToSend)
+            // })
             });
 
             // Send message to the server when form is submitted
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 if (input.value) {
-                    socket.send(input.value);  // Send the message to the server
+                    socket.send(input.value, tim);  // Send the message to the server
                     input.value = '';  // Clear the input field
                 }
             });
